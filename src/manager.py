@@ -24,16 +24,22 @@ class Manager:
                 return False
         return True
 
-    def get_apartment_costs(self, apartment_key, year, month):
+    def get_apartment_costs(self, apartment_key: str, year: int | None = None, month: int | None = None) -> float | None:
+        if month is not None:
+            if year is None:
+                raise ValueError("Month can't be given without year")
+            if not isinstance(month, int) or not 1 <= month <= 12:
+                raise ValueError(f"Invalid month: {month}")
+        
         if apartment_key not in self.apartments:
-            raise ValueError(f"Apartment '{apartment_key}' does not exist")
+            return None
 
         total = sum(
             bill.amount_pln
             for bill in self.bills
             if bill.apartment == apartment_key
-            and bill.settlement_year == year
-            and bill.settlement_month == month
+            and (year is None or bill.settlement_year == year)
+            and (month is None or bill.settlement_month == month)
         )
 
         return round(total, 2)

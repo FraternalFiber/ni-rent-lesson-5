@@ -2,9 +2,6 @@ import pytest
 
 from src.manager import Manager
 from src.models import Bill, Parameters
-from src.manager import Manager
-from src.models import Parameters
-from src.models import Bill
 
 
 def make_bill(amount, year, month, apartment='apart-polanka'):
@@ -28,8 +25,7 @@ def test_get_apartment_costs():
     ]
 
     # mieszkanie nie istnieje
-    with pytest.raises(ValueError):
-        manager.get_apartment_costs('invalid-key', 2024, 3)
+    assert manager.get_apartment_costs('invalid-key', 2024, 3) is None
 
     # brak rachunków w tym miesiącu
     assert manager.get_apartment_costs('apart-polanka', 2024, 5) == 0.0
@@ -39,6 +35,19 @@ def test_get_apartment_costs():
 
     # rok się zgadza, miesiąc nie
     assert manager.get_apartment_costs('apart-polanka', 2024, 4) == 999.0
+
+
+def test_get_apartment_costs_invalid_month():
+    manager = Manager(Parameters())
+
+    # błędny miesiąc
+    for month in [0, 13, -1]:
+        with pytest.raises(ValueError):
+            manager.get_apartment_costs('apart-polanka', 2024, month)
+
+    # miesiąc bez roku
+    with pytest.raises(ValueError):
+        manager.get_apartment_costs('apart-polanka', month=3)
 
 
 def test_apartment_costs_with_optional_parameters():
